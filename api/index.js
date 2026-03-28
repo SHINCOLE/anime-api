@@ -1,0 +1,118 @@
+const express = require("express");
+const cors = require("cors");
+const db = require("../db");
+require("dotenv").config();
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+/* ======================
+   1. GET ALL ANIMES
+====================== */
+app.get("/api/animes", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM animes");
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/* ======================
+   2. GET SINGLE ANIME
+====================== */
+app.get("/api/animes/:id", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM animes WHERE id = ?",
+      [req.params.id]
+    );
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/* ======================
+   3. ADD ANIME
+====================== */
+app.post("/api/animes", async (req, res) => {
+  try {
+    const { title, genre, description, image_url } = req.body;
+
+    await db.query(
+      "INSERT INTO animes (title, genre, description, image_url) VALUES (?, ?, ?, ?)",
+      [title, genre, description, image_url]
+    );
+
+    res.json({ message: "Anime added" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/* ======================
+   4. UPDATE RATING
+====================== */
+app.put("/api/animes/:id/rating", async (req, res) => {
+  try {
+    const { rating } = req.body;
+
+    await db.query(
+      "UPDATE animes SET rating = ? WHERE id = ?",
+      [rating, req.params.id]
+    );
+
+    res.json({ message: "Rating updated" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/* ======================
+   5. ADD COMMENT
+====================== */
+app.post("/api/animes/:id/comment", async (req, res) => {
+  try {
+    const { comment } = req.body;
+
+    await db.query(
+      "INSERT INTO comments (anime_id, comment) VALUES (?, ?)",
+      [req.params.id, comment]
+    );
+
+    res.json({ message: "Comment added" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/* ======================
+   6. GET COMMENTS
+====================== */
+app.get("/api/animes/:id/comments", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM comments WHERE anime_id = ?",
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/api/animes/:id", async (req, res) => {
+  try {
+    await db.query("DELETE FROM comments WHERE anime_id = ?", [req.params.id]);
+    await db.query("DELETE FROM animes WHERE id = ?", [req.params.id]);
+
+    res.json({ message: "Anime and comments deleted" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = app;
