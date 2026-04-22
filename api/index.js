@@ -10,15 +10,6 @@ app.use(express.json());
 
 app.get("/api/animes", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM animes");
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/api/animes", async (req, res) => {
-  try {
     const [rows] = await db.query(`
       SELECT 
         a.id,
@@ -38,7 +29,6 @@ app.get("/api/animes", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 app.get("/api/animes/:id/user/:userId", async (req, res) => {
   try {
     const { id, userId } = req.params;
