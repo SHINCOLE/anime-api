@@ -29,7 +29,8 @@ app.get("/api/animes", async (req, res) => {
         IFNULL(AVG(r.rating), 0) AS rating
       FROM animes a
       LEFT JOIN ratings r ON a.id = r.anime_id
-      GROUP BY a.id
+      GROUP BY 
+        a.id, a.title, a.genre, a.description, a.image_url
     `);
 
     res.json(rows);
