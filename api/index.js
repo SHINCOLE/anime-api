@@ -17,15 +17,24 @@ app.get("/api/animes", async (req, res) => {
   }
 });
 
-app.get("/api/animes/:id", async (req, res) => {
+app.get("/api/animes", async (req, res) => {
   try {
-    const [rows] = await db.query(
-      "SELECT * FROM animes WHERE id = ?",
-      [req.params.id]
-    );
-    res.json(rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const [rows] = await db.query(`
+      SELECT 
+        a.id,
+        a.title,
+        a.genre,
+        a.description,
+        a.image_url,
+        IFNULL(AVG(r.rating), 0) AS rating
+      FROM animes a
+      LEFT JOIN ratings r ON a.id = r.anime_id
+      GROUP BY a.id
+    `);
+
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
