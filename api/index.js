@@ -22,6 +22,7 @@ app.get("/api/animes", async (req, res) => {
       LEFT JOIN ratings r ON a.id = r.anime_id
       GROUP BY 
         a.id, a.title, a.genre, a.description, a.image_url
+        ORDER BY a.title ASC
     `);
 
     res.json(rows);
