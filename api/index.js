@@ -8,9 +8,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* ======================
-   1. GET ALL ANIMES
-====================== */
 app.get("/api/animes", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM animes");
@@ -20,9 +17,6 @@ app.get("/api/animes", async (req, res) => {
   }
 });
 
-/* ======================
-   2. GET SINGLE ANIME
-====================== */
 app.get("/api/animes/:id", async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -35,9 +29,6 @@ app.get("/api/animes/:id", async (req, res) => {
   }
 });
 
-/* ======================
-   3. ADD ANIME
-====================== */
 app.post("/api/animes", async (req, res) => {
   try {
     const { title, genre, description, image_url } = req.body;
@@ -53,27 +44,24 @@ app.post("/api/animes", async (req, res) => {
   }
 });
 
-/* ======================
-   4. UPDATE RATING
-====================== */
 app.put("/api/animes/:id/rating", async (req, res) => {
   try {
-    const { rating } = req.body;
+    const { rating, userId } = req.body;
+    const animeId = req.params.id;
 
     await db.query(
-      "UPDATE animes SET rating = ? WHERE id = ?",
-      [rating, req.params.id]
+      `INSERT INTO ratings (user_id, anime_id, rating)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE rating = ?`,
+      [userId, animeId, rating, rating]
     );
 
-    res.json({ message: "Rating updated" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json({ message: "Rating saved" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-/* ======================
-   5. ADD COMMENT
-====================== */
 app.post("/api/animes/:id/comment", async (req, res) => {
   try {
     const { comment } = req.body;
@@ -89,9 +77,6 @@ app.post("/api/animes/:id/comment", async (req, res) => {
   }
 });
 
-/* ======================
-   6. GET COMMENTS
-====================== */
 app.get("/api/animes/:id/comments", async (req, res) => {
   try {
     const [rows] = await db.query(
