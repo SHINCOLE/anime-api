@@ -119,13 +119,13 @@ const bcrypt = require("bcrypt");
 
 app.post("/api/signup", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, name} = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await db.query(
-      "INSERT INTO users (email, password) VALUES (?, ?)",
-      [email, hashedPassword]
+      "INSERT INTO users (email, password, name) VALUES (?, ? , ?)",
+      [email, hashedPassword, name]
     );
 
     res.json({ message: "User created" });
@@ -160,5 +160,24 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// GET PROFILE
+app.get("/api/user/:id", async (req, res) => {
+  const [rows] = await db.query(
+    "SELECT id, email, name FROM users WHERE id = ?",
+    [req.params.id]
+  );
+  res.json(rows[0]);
+});
 
+// UPDATE NAME
+app.put("/api/user/:id", async (req, res) => {
+  const { name } = req.body;
+
+  await db.query(
+    "UPDATE users SET name = ? WHERE id = ?",
+    [name, req.params.id]
+  );
+
+  res.json({ message: "Updated" });
+});
 module.exports = app;
