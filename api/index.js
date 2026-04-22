@@ -38,6 +38,21 @@ app.get("/api/animes", async (req, res) => {
   }
 });
 
+app.get("/api/animes/:id/user/:userId", async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+
+    const [rows] = await db.query(
+      "SELECT rating FROM ratings WHERE anime_id = ? AND user_id = ?",
+      [id, userId]
+    );
+
+    res.json(rows[0] || { rating: 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post("/api/animes", async (req, res) => {
   try {
     const { title, genre, description, image_url } = req.body;
